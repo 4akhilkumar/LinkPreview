@@ -135,11 +135,14 @@ def link_preview(url: Union[str, None] = None):
         validURL = valid_URL(formatedURL)
         if validURL is True:
             linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
-            return {
-                "title": linkPreview_data['title'],
-                "description": linkPreview_data['description'],
-                "image": linkPreview_data['image']
-            }
+            if linkPreview_data is not False:
+                return {
+                    "title": linkPreview_data['title'],
+                    "description": linkPreview_data['description'],
+                    "image": linkPreview_data['image']
+                }
+            else:
+                return {"msg": "Connection Time out"}
         else:
             return {"msg": "Invalid URL"}
     else:
