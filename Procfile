@@ -1,1 +1,1 @@
-web: gunicorn -w 4 -k uvicorn.workers.UvicornWorker link_preview:app
+web: uvicorn link_preview:app --host=0.0.0.0
