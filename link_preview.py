@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Union
 import re
@@ -103,9 +104,9 @@ def get_image(soup_object, requestedURL):
         return False
 
 def check_URL_reqests_module_BS4(requestedURL):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
-        }
+    # headers = {
+    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
+    #     }
     try:
         response = requests.get(requestedURL, timeout=30)
         soup = BeautifulSoup(response.text, features="html.parser")
@@ -147,3 +148,15 @@ def link_preview(url: Union[str, None] = None):
             return {"msg": "Invalid URL"}
     else:
         return {"msg": "Can't process URL"}
+
+origins = [
+    "*"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
