@@ -121,6 +121,13 @@ def check_URL_reqests_module_BS4(requestedURL):
         print(e)
         return False
 
+@app.get("/")
+def home_page():
+    return {
+        'message': 'Welcome to LinkPreview API',
+        'github': "https://github.com/4akhilkumar/LinkPreview" 
+    }
+
 @app.get("/link_preview")
 def link_preview(url: Union[str, None] = None):
     formatedURL = format_URL(url)
