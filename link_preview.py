@@ -78,7 +78,10 @@ def get_image(soup_object, requestedURL):
                 image = soup_object.find("link", {"rel": "icon"})
                 if image:
                     if image.get('href').startswith("/"):
-                        return requestedURL + image.get('href')[1:]
+                        if requestedURL.endswith('/'):
+                            return requestedURL + image.get('href')[1:]
+                        else:
+                            return requestedURL + image.get('href')
                     return image.get('href')
                 else:
                     try:
@@ -87,7 +90,10 @@ def get_image(soup_object, requestedURL):
                         else:
                             favicon = '/favicon.ico'
                         favicon_response = requests.get(requestedURL + favicon, timeout=11)
-                        return requestedURL + favicon
+                        if favicon_response.status_code == 200:
+                            return requestedURL + favicon
+                        else:
+                            return False
                     except Exception as e:
                         print("Favicon Exception",e)
                         return False
@@ -101,7 +107,7 @@ def check_URL_reqests_module_BS4(requestedURL):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
         }
     try:
-        response = requests.get(requestedURL, timeout=11)
+        response = requests.get(requestedURL, timeout=30)
         soup = BeautifulSoup(response.text, features="html.parser")
         title = get_title(soup)
         description = get_decription(soup)
@@ -123,7 +129,9 @@ def link_preview(url: Union[str, None] = None):
         if validURL is True:
             linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
             return {
-                "data": linkPreview_data
+                "title": linkPreview_data['title'],
+                "description": linkPreview_data['description'],
+                "image": linkPreview_data['image']
             }
         else:
             return {"msg": "Invalid URL"}
