@@ -82,8 +82,12 @@ def get_image(soup_object, requestedURL):
                     return image.get('href')
                 else:
                     try:
-                        favicon_response = requests.get(requestedURL + "favicon.ico", timeout=11)
-                        return requestedURL + "favicon.ico"
+                        if requestedURL.endswith('/'):
+                            favicon = 'favicon.ico'
+                        else:
+                            favicon = '/favicon.ico'
+                        favicon_response = requests.get(requestedURL + favicon, timeout=11)
+                        return requestedURL + favicon
                     except Exception as e:
                         print("Favicon Exception",e)
                         return False
