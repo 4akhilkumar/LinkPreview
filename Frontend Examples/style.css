@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    row-gap: 2rem;
+}
+
+.link-preview {
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 16px rgb(17 17 26 / 10%);
+    width: 30rem;
+    height: 8rem;
+    padding: .8rem;
+    border-radius: .25rem;
+}
+
+.link-preview-img {
+    width: 100%;
+    max-width: 100px;
+    height: 100%;
+}
+
+.link-preview-img img {
+    width: 100%;
+    height: 100%;
+    /* object-fit: cover; */
+    display: block;
+}
+
+.link-preview-title-description {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.25rem;
+    padding-left: .5rem;
+    border-left: 2px solid #000;
+    margin-left: .5rem;
+}
+
+.link-preview-title h3 {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.link-preview-description {
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+}
+
+.link-preview-description p {
+    font-size: .9rem;
+    hyphens: auto;
+}
+
+.get-link-preview {
+    display: flex;
+    column-gap: .5rem;
+    width: 100%;
+    max-width: 30rem;
+}
+
+input[type="text"].input-url {
+    padding: .5rem;
+    border-radius: .25rem;
+    outline: none;
+    width: 100%;
+    border: 2px solid #bdbdbd;
+    transition: all .4s;
+}
+
+input[type="text"].input-url:hover {
+    border: 2px solid #757575;
+}
+
+button.get-link-preview {
+    max-width: fit-content;
+    padding: .5rem;
+    border-radius: .25rem;
+    background: #000;
+    color: #FFF;
+    font-weight: 600;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+button.get-link-preview:hover,
+button.get-link-preview:focus,
+button.get-link-preview:active {
+    background: #FFF;
+    color: #000;
+    border: 2px solid #000;
+}
+
+/* Google Loading CSS */
+
+.loader {
+  position: relative;
+  margin: 0 auto;
+  width: 100px;
+}
+.loader:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+.circular {
+  -webkit-animation: rotate 2s linear infinite;
+          animation: rotate 2s linear infinite;
+  height: 100%;
+  transform-origin: center center;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.path {
+  stroke-dasharray: 1, 200;
+  stroke-dashoffset: 0;
+  -webkit-animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+          animation: dash 1.5s ease-in-out infinite, color 6s ease-in-out infinite;
+  stroke-linecap: round;
+}
+
+@-webkit-keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -35px;
+  }
+  100% {
+    stroke-dasharray: 89, 200;
+    stroke-dashoffset: -124px;
+  }
+}
+@-webkit-keyframes color {
+  100%, 0% {
+    stroke: #d62d20;
+  }
+  40% {
+    stroke: #0057e7;
+  }
+  66% {
+    stroke: #008744;
+  }
+  80%, 90% {
+    stroke: #ffa700;
+  }
+}
+@keyframes color {
+  100%, 0% {
+    stroke: #d62d20;
+  }
+  40% {
+    stroke: #0057e7;
+  }
+  66% {
+    stroke: #008744;
+  }
+  80%, 90% {
+    stroke: #ffa700;
+  }
+}
+
+.showbox {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 5%;
+}
+
+/* Google Loading CSS */
