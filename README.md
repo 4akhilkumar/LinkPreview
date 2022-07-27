@@ -54,3 +54,37 @@ https://rinjo.herokuapp.com/link_preview?url=https://www.google.com
 | msg | string | Response of the URL | "Invalid URL" or "Can't process URL" or "Connection Time out" |
 
 ### If title, description or image return false then it means our API could not fetch the data from the URL.
+
+## Examples
+
+## jQuery
+### GET Request using Ajax
+```
+$.ajax({
+    url: "https://rinjo.herokuapp.com/link_preview?url=https://www.google.com",
+    type: 'GET',
+    data : {},
+    success: function(data) {            
+        console.log(data);
+    },
+    error: function(data) {
+        console.log(data);
+    }
+});
+```
+
+## GET Request using Python
+```
+import requests
+
+API_URL = "http://rinjo.herokuapp.com/link_preview?url="
+target = "https://www.google.com"
+try:
+    response = requests.get(API_URL, params={'url': target}, timeout=30)
+    print(response.json())
+except Exception as e:
+    print(e)
+```
+
+## Full Frontend Example - Codepen
+[LinkPreview - Codepen](https://codepen.io/4akhilkumar/pen/PoRJmQm)
