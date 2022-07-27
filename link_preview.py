@@ -64,40 +64,49 @@ def get_decription(soup_object):
 
 def get_image(soup_object, requestedURL):
     try:
-        image = soup_object.find("meta", {"property": "og:image"})
+        image = soup_object.find("link", {"rel": "apple-touch-icon"})
         if image:
-            if image.get('content')[0] == '/':
-                return requestedURL + image.get('content')
-            return image.get('content')
-        else:
-            image = soup_object.find("link", {"rel": "shortcut icon"})
-            if image:
-                if image.get('href').startswith("/"):
+            if image.get('href').startswith("/"):
+                if requestedURL.endswith('/'):
                     return requestedURL + image.get('href')[1:]
-                return image.get('href')
+                else:
+                    return requestedURL + image.get('href')
+            return image.get('href')
+        else:
+            image = soup_object.find("meta", {"property": "og:image"})
+            if image:
+                if image.get('content')[0] == '/':
+                    return requestedURL + image.get('content')
+                return image.get('content')
             else:
-                image = soup_object.find("link", {"rel": "icon"})
+                image = soup_object.find("link", {"rel": "shortcut icon"})
                 if image:
                     if image.get('href').startswith("/"):
-                        if requestedURL.endswith('/'):
-                            return requestedURL + image.get('href')[1:]
-                        else:
-                            return requestedURL + image.get('href')
+                        return requestedURL + image.get('href')[1:]
                     return image.get('href')
                 else:
-                    try:
-                        if requestedURL.endswith('/'):
-                            favicon = 'favicon.ico'
-                        else:
-                            favicon = '/favicon.ico'
-                        favicon_response = requests.get(requestedURL + favicon, timeout=11)
-                        if favicon_response.status_code == 200:
-                            return requestedURL + favicon
-                        else:
+                    image = soup_object.find("link", {"rel": "icon"})
+                    if image:
+                        if image.get('href').startswith("/"):
+                            if requestedURL.endswith('/'):
+                                return requestedURL + image.get('href')[1:]
+                            else:
+                                return requestedURL + image.get('href')
+                        return image.get('href')
+                    else:
+                        try:
+                            if requestedURL.endswith('/'):
+                                favicon = 'favicon.ico'
+                            else:
+                                favicon = '/favicon.ico'
+                            favicon_response = requests.get(requestedURL + favicon, timeout=11)
+                            if favicon_response.status_code == 200:
+                                return requestedURL + favicon
+                            else:
+                                return False
+                        except Exception as e:
+                            print("Favicon Exception",e)
                             return False
-                    except Exception as e:
-                        print("Favicon Exception",e)
-                        return False
 
     except Exception as e:
         print("Image Exception",e)

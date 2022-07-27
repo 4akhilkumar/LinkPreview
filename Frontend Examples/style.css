@@ -35,7 +35,7 @@ body {
 .link-preview-img img {
   width: 100%;
   height: 100%;
-  /* object-fit: cover; */
+  object-fit: contain; /* cover, contain, fill, none, scale-down */
   display: block;
 }
 
