@@ -1,6 +1,6 @@
 function link_preview(url) {
     $.ajax({
-        url: "http://127.0.0.1:8000/link_preview?url="+url,
+        url: "https://rinjo.herokuapp.com/link_preview?url="+url,
         type: 'GET',
         data : {},
         success: function(data) {            
