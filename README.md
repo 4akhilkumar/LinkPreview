@@ -88,3 +88,6 @@ except Exception as e:
 
 ## Full Frontend Example - Codepen
 [LinkPreview - Codepen](https://codepen.io/4akhilkumar/pen/PoRJmQm)
+
+## Output
+![LinkPreview](https://raw.githubusercontent.com/4akhilkumar/LinkPreview/gh-pages/Screenshot%202022-07-27%20082644.jpg "LinkPreview")
