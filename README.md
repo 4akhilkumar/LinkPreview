@@ -77,7 +77,7 @@ $.ajax({
 ```
 import requests
 
-API_URL = "http://rinjo.herokuapp.com/link_preview?url="
+API_URL = "http://rinjo.herokuapp.com/link_preview"
 target = "https://www.google.com"
 try:
     response = requests.get(API_URL, params={'url': target}, timeout=30)
