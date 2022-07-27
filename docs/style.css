@@ -13,7 +13,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  row-gap: 2rem;
+  background: #e0e0e0;
 }
 
 .link-preview {
@@ -24,6 +24,7 @@ body {
   height: 10rem;
   padding: .8rem;
   border-radius: .25rem;
+  background: #FFF;
 }
 
 .link-preview-img {
@@ -70,6 +71,17 @@ body {
   column-gap: .5rem;
   width: 100%;
   max-width: 30rem;
+}
+
+.link-preview-github-repo {
+  margin: 1rem 0 2rem 0;
+}
+
+.link-preview-github-repo a {
+  text-decoration: none;
+  color: #000;
+  border-bottom: 1px solid #000;
+  transition: all ease-in-out .4s;
 }
 
 input[type="text"].input-url {
