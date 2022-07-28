@@ -3,11 +3,11 @@ function link_preview(url) {
         url: "https://rinjo.herokuapp.com/link_preview?url="+url,
         type: 'GET',
         data : {},
-        success: function(data) {            
+        success: function(data) {       
             html_data = `
                 <div class="link-preview">
                     <div class="link-preview-img">
-                        <img src="${data.image}" id="id_link-preview-img" alt="">
+                        <img src="data:image/png;base64,${data.image}" id="id_link-preview-img" alt="">
                     </div>
                     <div class="link-preview-title-description">
                         <div class="link-preview-title">
