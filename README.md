@@ -50,7 +50,7 @@ https://rinjo.herokuapp.com/link_preview?url=https://www.google.com
 | -------- | ----------- | -------- | ----------- |
 | title | string / boolean | Website title | Google |
 | description | string / boolean | Description  | Search the world's information, including webpages, images, videos and more. Google has many special features to help you find exactly what you're looking for. |
-|image | string / boolean | Preview image URL | https://www.google.com/logos/doodles/2022/celebrating-steelpan-6753651837108467.2-2xa.gif |
+|image | bytes - base64 / boolean | Preview image URL | https://www.google.com/logos/doodles/2022/celebrating-steelpan-6753651837108467.2-2xa.gif |
 | msg | string | Response of the URL | "Invalid URL" or "Can't process URL" or "Connection Time out" |
 
 ### If title, description or image return false then it means our API could not fetch the data from the URL.
