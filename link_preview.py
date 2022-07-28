@@ -5,6 +5,7 @@ from typing import Union
 import re
 from bs4 import BeautifulSoup
 import requests
+import base64
 
 app = FastAPI()
 
@@ -99,7 +100,7 @@ def get_image(soup_object, requestedURL):
                                 favicon = 'favicon.ico'
                             else:
                                 favicon = '/favicon.ico'
-                            favicon_response = requests.get(requestedURL + favicon, timeout=11)
+                            favicon_response = requests.get(requestedURL + favicon, timeout=30)
                             if favicon_response.status_code == 200:
                                 return requestedURL + favicon
                             else:
@@ -112,6 +113,13 @@ def get_image(soup_object, requestedURL):
         print("Image Exception",e)
         return False
 
+def get_image_bytes(image_url):
+    b64_img = False
+    data = requests.get(image_url, timeout=30)
+    if data.status_code == 200:
+        b64_img = base64.b64encode(data.content).decode()
+    return b64_img
+
 def check_URL_reqests_module_BS4(requestedURL):
     # headers = {
     #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
@@ -122,10 +130,12 @@ def check_URL_reqests_module_BS4(requestedURL):
         title = get_title(soup)
         description = get_decription(soup)
         image = get_image(soup, requestedURL)
+        image_bytes = get_image_bytes(image)
+
         return {
             'title': title, 
             'description': description, 
-            'image': image
+            'image': image_bytes,
         }
     except Exception as e:
         print(e)
