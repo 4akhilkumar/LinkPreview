@@ -93,14 +93,21 @@ def get_image(soup_object, requestedURL):
                                 return requestedURL + image.get('href')[1:]
                             else:
                                 return requestedURL + image.get('href')
-                        return image.get('href')
+                        else:
+                            if re.search(r'^http(s)?://', image.get('href')):
+                                return image.get('href')
+                            else:
+                                if requestedURL.endswith('/'):
+                                    return requestedURL + image.get('href')[1:]
+                                else:
+                                    return requestedURL + "/" + image.get('href')
                     else:
                         try:
                             if requestedURL.endswith('/'):
                                 favicon = 'favicon.ico'
                             else:
                                 favicon = '/favicon.ico'
-                            favicon_response = requests.get(requestedURL + favicon, timeout=30)
+                            favicon_response = requests.get(requestedURL + favicon, timeout=60)
                             if favicon_response.status_code == 200:
                                 return requestedURL + favicon
                             else:
@@ -115,9 +122,13 @@ def get_image(soup_object, requestedURL):
 
 def get_image_bytes(image_url):
     b64_img = False
-    data = requests.get(image_url, timeout=30)
-    if data.status_code == 200:
-        b64_img = base64.b64encode(data.content).decode()
+    try:
+        data = requests.get(image_url, timeout=60)
+        if data.status_code == 200:
+            b64_img = base64.b64encode(data.content).decode()
+    except Exception as e:
+        print("Image Bytes Exception",e)
+        b64_img = False
     return b64_img
 
 def check_URL_reqests_module_BS4(requestedURL):
@@ -125,7 +136,7 @@ def check_URL_reqests_module_BS4(requestedURL):
     #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
     #     }
     try:
-        response = requests.get(requestedURL, timeout=30)
+        response = requests.get(requestedURL, timeout=60)
         soup = BeautifulSoup(response.text, features="html.parser")
         title = get_title(soup)
         description = get_decription(soup)
@@ -138,7 +149,7 @@ def check_URL_reqests_module_BS4(requestedURL):
             'image': image_bytes,
         }
     except Exception as e:
-        print(e)
+        print("IMAGE URL",e)
         return False
 
 @app.get("/")
