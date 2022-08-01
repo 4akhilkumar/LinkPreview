@@ -26,6 +26,10 @@ def valid_URL(formatedURL):
     else:
         return False
 
+def extract_domain_url(any_url = None):
+    domain_name = re.search(r'^(?:http(s)?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)', any_url)
+    return domain_name.group(2)
+
 def get_title(soup_object):
     try:
         # Look title in Basic Meta Tags first and then OpenGraph Meta Tags
@@ -63,53 +67,69 @@ def get_decription(soup_object):
     except Exception as e:
         return False
 
+def make_image_url(requestedURL = None, imageURL = None):
+    if not re.search(r'^http(s)?://', imageURL):
+        if(imageURL.startswith("//")):
+            imageURL = "http:" + imageURL
+            return imageURL
+        elif imageURL.startswith("/"):
+            if requestedURL.endswith('/'):
+                imageURL = requestedURL + imageURL[1:]
+                return imageURL
+            imageURL = requestedURL + imageURL
+            return imageURL
+        elif imageURL.startswith("./"):
+            if requestedURL.endswith('/'):
+                imageURL = requestedURL + imageURL[2:]
+                return imageURL
+            imageURL = requestedURL + imageURL[1:]
+            return imageURL
+        elif imageURL.startswith("../"):
+            if requestedURL.endswith('/'):
+                imageURL = requestedURL + imageURL[3:]
+                return imageURL
+            imageURL = requestedURL + imageURL[2:]
+            return imageURL
+        else:
+            print(imageURL)
+            if requestedURL.endswith('/'):
+                imageURL = requestedURL + imageURL
+                return imageURL
+            imageURL = requestedURL + "/" + imageURL
+            return imageURL
+    else:
+        return imageURL
+
+# imageURL = format_URL(extract_domain_url(requestedURL)) + imageURL
+
 def get_image(soup_object, requestedURL):
     try:
         image = soup_object.find("link", {"rel": "apple-touch-icon"})
         if image:
-            if image.get('href').startswith("/"):
-                if requestedURL.endswith('/'):
-                    return requestedURL + image.get('href')[1:]
-                else:
-                    return requestedURL + image.get('href')
-            return image.get('href')
+            imageURL = make_image_url(requestedURL, image.get('href'))
+            return imageURL
         else:
             image = soup_object.find("meta", {"property": "og:image"})
             if image:
-                if image.get('content')[0] == '/':
-                    return requestedURL + image.get('content')
-                return image.get('content')
+                imageURL = make_image_url(requestedURL, image.get('content'))
+                return imageURL
             else:
                 image = soup_object.find("link", {"rel": "shortcut icon"})
                 if image:
-                    if image.get('href').startswith("/"):
-                        return requestedURL + image.get('href')[1:]
-                    return image.get('href')
+                    imageURL = make_image_url(requestedURL, image.get('href'))
+                    return imageURL
                 else:
                     image = soup_object.find("link", {"rel": "icon"})
                     if image:
-                        if image.get('href').startswith("/"):
-                            if requestedURL.endswith('/'):
-                                return requestedURL + image.get('href')[1:]
-                            else:
-                                return requestedURL + image.get('href')
-                        else:
-                            if re.search(r'^http(s)?://', image.get('href')):
-                                return image.get('href')
-                            else:
-                                if requestedURL.endswith('/'):
-                                    return requestedURL + image.get('href')[1:]
-                                else:
-                                    return requestedURL + "/" + image.get('href')
+                        imageURL = make_image_url(requestedURL, image.get('href'))
+                        return imageURL
                     else:
                         try:
-                            if requestedURL.endswith('/'):
-                                favicon = 'favicon.ico'
-                            else:
-                                favicon = '/favicon.ico'
-                            favicon_response = requests.get(requestedURL + favicon, timeout=60)
+                            favicon = '/favicon.ico'
+                            final_domain = "http://" + extract_domain_url(requestedURL) + favicon
+                            favicon_response = requests.get(final_domain, timeout=60)
                             if favicon_response.status_code == 200:
-                                return requestedURL + favicon
+                                return final_domain
                             else:
                                 return False
                         except Exception as e:
@@ -161,23 +181,28 @@ def home_page():
 
 @app.get("/link_preview")
 def link_preview(url: Union[str, None] = None):
-    formatedURL = format_URL(url)
-    if format_URL(url) is not False:
-        validURL = valid_URL(formatedURL)
-        if validURL is True:
-            linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
-            if linkPreview_data is not False:
-                return {
-                    "title": linkPreview_data['title'],
-                    "description": linkPreview_data['description'],
-                    "image": linkPreview_data['image']
-                }
+    try:
+        formatedURL = format_URL(url)
+        if format_URL(url) is not False:
+            validURL = valid_URL(formatedURL)
+            if validURL is True:
+                linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
+                if linkPreview_data is not False:
+                    return {
+                        "title": linkPreview_data['title'],
+                        "description": linkPreview_data['description'],
+                        "image": linkPreview_data['image']
+                    }
+                else:
+                    return {"msg": "Connection Time out"}
             else:
-                return {"msg": "Connection Time out"}
+                return {"msg": "Invalid URL"}
         else:
-            return {"msg": "Invalid URL"}
-    else:
-        return {"msg": "Can't process URL"}
+            return {"msg": "Can't process URL"}
+    except Exception as e:
+        print(e)
+        return home_page()
+
 
 origins = [
     "*"
