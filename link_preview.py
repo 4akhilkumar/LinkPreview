@@ -69,33 +69,21 @@ def get_decription(soup_object):
 
 def make_image_url(requestedURL = None, imageURL = None):
     if not re.search(r'^http(s)?://', imageURL):
+        domainFromrequestedURL = "http://" + extract_domain_url(requestedURL)
         if(imageURL.startswith("//")):
             imageURL = "http:" + imageURL
             return imageURL
         elif imageURL.startswith("/"):
-            if requestedURL.endswith('/'):
-                imageURL = requestedURL + imageURL[1:]
-                return imageURL
-            imageURL = requestedURL + imageURL
+            imageURL = domainFromrequestedURL + imageURL
             return imageURL
         elif imageURL.startswith("./"):
-            if requestedURL.endswith('/'):
-                imageURL = requestedURL + imageURL[2:]
-                return imageURL
-            imageURL = requestedURL + imageURL[1:]
+            imageURL = domainFromrequestedURL + imageURL[1:]
             return imageURL
         elif imageURL.startswith("../"):
-            if requestedURL.endswith('/'):
-                imageURL = requestedURL + imageURL[3:]
-                return imageURL
-            imageURL = requestedURL + imageURL[2:]
+            imageURL = domainFromrequestedURL + imageURL[2:]
             return imageURL
         else:
-            print(imageURL)
-            if requestedURL.endswith('/'):
-                imageURL = requestedURL + imageURL
-                return imageURL
-            imageURL = requestedURL + "/" + imageURL
+            imageURL = domainFromrequestedURL + "/" + imageURL
             return imageURL
     else:
         return imageURL
