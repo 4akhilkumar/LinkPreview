@@ -89,5 +89,8 @@ except Exception as e:
     print(e)
 ```
 
+## Live Demo
+[LinkPreview API Live Demo](https://4akhilkumar.github.io/LinkPreview/index.html)
+
 ## Full Frontend Example - Codepen
 [LinkPreview - Codepen](https://codepen.io/4akhilkumar/pen/PoRJmQm)
