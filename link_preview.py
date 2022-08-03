@@ -180,7 +180,7 @@ class URL(BaseModel):
     url: Union[str, None] = None
 
 @app.post("/link_preview/")
-async def create_item(url: URL):
+async def link_preview(url: URL):
     try:
         formatedURL = format_URL(url.url)
         if formatedURL is not False:
