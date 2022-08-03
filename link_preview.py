@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Union
@@ -10,20 +11,28 @@ import base64
 app = FastAPI()
 
 def format_URL(url):
-    # checl url contains "://" using regex
-    if re.search(r'://', url):
-        # if true then check the protocol is http or https  using regex
-        if re.search(r'^http(s)?://', url):
-            return url
+    try:
+        # checl url contains "://" using regex
+        if re.search(r'://', url):
+            # if true then check the protocol is http or https using regex
+            if re.search(r'^http(s)?://', url):
+                return url
+            else: # other than http or https are like ftp
+                return False
         else:
-            return False
-    else:
-        return 'http://' + url
+            return 'http://' + url
+    except Exception as e:
+        print("Format URL Exception",e)
+        return False
 
 def valid_URL(formatedURL):
-    if re.search(r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$', str(formatedURL)):
-        return True
-    else:
+    try:
+        if re.search(r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$', str(formatedURL)):
+            return True
+        else:
+            return False
+    except Exception as e:
+        print("Valid URL Exception",e)
         return False
 
 def extract_domain_url(any_url = None):
@@ -167,11 +176,14 @@ def home_page():
         'github': "https://github.com/4akhilkumar/LinkPreview" 
     }
 
-@app.get("/link_preview")
-def link_preview(url: Union[str, None] = None):
+class URL(BaseModel):
+    url: Union[str, None] = None
+
+@app.post("/link_preview/")
+async def create_item(url: URL):
     try:
-        formatedURL = format_URL(url)
-        if format_URL(url) is not False:
+        formatedURL = format_URL(url.url)
+        if formatedURL is not False:
             validURL = valid_URL(formatedURL)
             if validURL is True:
                 linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
@@ -188,7 +200,7 @@ def link_preview(url: Union[str, None] = None):
         else:
             return {"msg": "Can't process URL"}
     except Exception as e:
-        print(e)
+        print("Main Func Exception",e)
         return home_page()
 
 
