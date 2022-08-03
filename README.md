@@ -11,12 +11,57 @@ LinkPreview summarize the contents of the URL and display the name of the given 
 
 It's difficult to undestand a string of undecipherable characters like `https://youtu.be/dQw4w9WgXcQ`. LinkPreview provides you detailed website information - title, preview image, and short description in JSON format by default for any given URL
 
+## API Endpoints
+We provide both HTTP and HTTPS endpoints for our service:
+| Endpoint | HTTP Method |
+| -------- | ----------- |
+| http://rinjo.herokuapp.com/link_preview/ | POST |
+| https://rinjo.herokuapp.com/link_preview/ | POST |
 
-## Quick example
+## Response Fields
 
-### Simple GET Request
+| Name | Type | Description | Example Response |
+| -------- | ----------- | -------- | ----------- |
+| title | string / boolean | Website title | Google |
+| description | string / boolean | Description  | Search the world's information, including webpages, images, videos and more. Google has many special features to help you find exactly what you're looking for. |
+|image | bytes - base64 / boolean | Preview image URL | AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAA |
+| msg | string | Response of the URL | "Invalid URL" or "Can't process URL" or "Connection Time out" |
+
+## Note - 1
+    Example Response of bytes - base64 is just sample format of the image base64 encoded. If title, description or image return false then it means our API could not fetch the data from the URL.
+
+## Examples
+
+## jQuery
+### POST Request using Ajax
 ```
-https://rinjo.herokuapp.com/link_preview?url=https://www.google.com
+$.ajax({
+    type: 'post',
+    contentType: "application/json",
+    url: "https://rinjo.herokuapp.com/link_preview/",
+    data: JSON.stringify({
+        url: "https://www.google.com"
+    }),
+    success: function(data) {            
+        console.log(data);
+    },
+    error: function(data) {
+        console.log(data);
+    }
+});
+```
+
+## POST Request using Python
+```
+import requests
+
+API_URL = "http://rinjo.herokuapp.com/link_preview/"
+target = "https://www.google.com"
+try:
+    response = requests.post(API_URL, json={'url': target}, timeout=60)
+    print(response.json())
+except Exception as e:
+    print(e)
 ```
 
 ### JSON Response
@@ -28,66 +73,8 @@ https://rinjo.herokuapp.com/link_preview?url=https://www.google.com
 }
 ```
 
-### Example Response of bytes - base64 is just sample format of the image base64 encoded
-
-## API Endpoints
-We provide both HTTP and HTTPS endpoints for our service:
-| Endpoint | HTTP Method |
-| -------- | ----------- |
-| http://rinjo.herokuapp.com/link_preview?url=<YOUR_URL> | GET |
-| https://rinjo.herokuapp.com/link_preview?url=<YOUR_URL> | GET |
-
-## Query parameter
-```
-https://rinjo.herokuapp.com/link_preview?url=https://www.google.com
-```
-
-| Parameter | Description | Example | Required |
-| -------- | ----------- | -------- | ----------- |
-| url | URL to be previewed | https://www.google.com | Yes |
-
-## Response Fields
-
-| Name | Type | Description | Example Response |
-| -------- | ----------- | -------- | ----------- |
-| title | string / boolean | Website title | Google |
-| description | string / boolean | Description  | Search the world's information, including webpages, images, videos and more. Google has many special features to help you find exactly what you're looking for. |
-|image | bytes - base64 / boolean | Preview image URL | AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAA |
-| msg | string | Response of the URL | "Invalid URL" or "Can't process URL" or "Connection Time out" |
-
-### Example Response of bytes - base64 is just sample format of the image base64 encoded
-### If title, description or image return false then it means our API could not fetch the data from the URL.
-
-## Examples
-
-## jQuery
-### GET Request using Ajax
-```
-$.ajax({
-    url: "https://rinjo.herokuapp.com/link_preview?url=https://www.google.com",
-    type: 'GET',
-    data : {},
-    success: function(data) {            
-        console.log(data);
-    },
-    error: function(data) {
-        console.log(data);
-    }
-});
-```
-
-## GET Request using Python
-```
-import requests
-
-API_URL = "http://rinjo.herokuapp.com/link_preview"
-target = "https://www.google.com"
-try:
-    response = requests.get(API_URL, params={'url': target}, timeout=30)
-    print(response.json())
-except Exception as e:
-    print(e)
-```
+## Note - 2
+    Example Response of bytes - base64 is just sample format of the image base64 encoded
 
 ## Live Demo
 [LinkPreview API Live Demo](https://4akhilkumar.github.io/LinkPreview/index.html)
