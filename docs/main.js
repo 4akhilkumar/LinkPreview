@@ -6,7 +6,7 @@ function link_preview(preview_url) {
         data: JSON.stringify({
             url: preview_url
         }),
-        success: function(data) {       
+        success: function(data) {
             html_data = `
                 <div class="link-preview">
                     <div class="link-preview-img">
