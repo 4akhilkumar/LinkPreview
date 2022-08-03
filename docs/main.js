@@ -1,8 +1,11 @@
-function link_preview(url) {
+function link_preview(preview_url) {
     $.ajax({
-        url: "https://rinjo.herokuapp.com/link_preview?url="+url,
-        type: 'GET',
-        data : {},
+        url: "https://rinjo.herokuapp.com/link_preview/",
+        type: 'post',
+        contentType: "application/json",
+        data: JSON.stringify({
+            url: preview_url
+        }),
         success: function(data) {       
             html_data = `
                 <div class="link-preview">
