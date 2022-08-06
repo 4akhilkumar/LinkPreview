@@ -1,3 +1,7 @@
+function escapeHTMLChar(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/!/g, '&excl;');
+}
+
 function link_preview(preview_url) {
     $.ajax({
         url: "https://rinjo.herokuapp.com/link_preview/",
@@ -15,12 +19,12 @@ function link_preview(preview_url) {
                     <div class="link-preview-title-description">
                         <div class="link-preview-title">
                             <h3 id="id_link-preview-title">
-                                ${data.title}
+                                ${escapeHTMLChar(data.title)}
                             </h3>
                         </div>
                         <div class="link-preview-description">
-                            <p id="id_link-preview=description">
-                                ${data.description}
+                            <p id="id_link-preview-description">
+                                ${escapeHTMLChar(data.description)}
                             </p>
                         </div>
                     </div>
