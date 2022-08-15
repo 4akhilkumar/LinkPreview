@@ -1,5 +1,9 @@
 function escapeHTMLChar(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/!/g, '&excl;');
+    try {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/!/g, '&excl;');
+    } catch (error) {
+        return str
+    }
 }
 
 function link_preview(preview_url) {
