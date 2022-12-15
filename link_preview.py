@@ -1,206 +1,216 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-
-from typing import Union
+"""
+This file contains the main logic of the project - Link Preview
+"""
 import re
-from bs4 import BeautifulSoup
-import requests
+from typing import Union
 import base64
+import requests
+from pydantic import BaseModel
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-def format_URL(url):
+def format_url(url) -> bool:
+    """
+    Check url contains "://" using regex
+    if true then check the protocol is http or https using regex
+    other than http or https are like ftp
+    """
     try:
-        # checl url contains "://" using regex
         if re.search(r'://', url):
-            # if true then check the protocol is http or https using regex
             if re.search(r'^http(s)?://', url):
                 return url
-            else: # other than http or https are like ftp
-                return False
-        else:
-            return 'http://' + url
-    except Exception as e:
-        print("Format URL Exception",e)
-        return False
-
-def valid_URL(formatedURL):
-    try:
-        if re.search(r'^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$', str(formatedURL)):
-            return True
-        else:
             return False
-    except Exception as e:
-        print("Valid URL Exception",e)
+        return 'http://' + url
+    except Exception:
         return False
 
-def extract_domain_url(any_url = None):
+def is_valid_url(formated_url) -> bool:
+    """
+    Check url is valid or not using regex
+    """
+    regex_url = r'^https?:\/\/(?:www\.)? \
+                    [-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$'
+    try:
+        if re.search(regex_url, str(formated_url)):
+            return True
+        return False
+    except Exception:
+        return False
+
+def extract_domain_url(any_url = None) -> str:
+    """
+    Extract domain name from any url
+    """
     domain_name = re.search(r'^(?:http(s)?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)', any_url)
     return domain_name.group(2)
 
 def get_title(soup_object):
+    """
+    Get title from soup object
+    Look title in Basic Meta Tags first and then OpenGraph Meta Tags
+    """
     try:
-        # Look title in Basic Meta Tags first and then OpenGraph Meta Tags
         title = soup_object.find('title')
         if title:
             return title.text
-        else:
-            title = soup_object.find("meta", {"property": "og:title"})
-            if title:
-                return title.get('content')
-            else:
-                title = soup_object.find("meta", {"name": "apple-mobile-web-app-title"})
-                if title:
-                    return title.get('content')
-                else:
-                    title = soup_object.find("meta", {"property": "og:site_name"})
-                    if title:
-                        return title.get('content')
-                    else:
-                        return False
-    except Exception as e:
+        title = soup_object.find("meta", {"property": "og:title"})
+        if title:
+            return title.get('content')
+        title = soup_object.find("meta", {"name": "apple-mobile-web-app-title"})
+        if title:
+            return title.get('content')
+        title = soup_object.find("meta", {"property": "og:site_name"})
+        if title:
+            return title.get('content')
+        return False
+    except Exception:
         return False
 
 def get_decription(soup_object):
+    """
+    Get description from soup object
+    """
     try:
         description = soup_object.find("meta", {"name": "description"})
         if description:
             return description.get('content')
-        else:
-            description = soup_object.find("meta", {"property": "og:description"})
-            if description:
-                return description.get('content')
-            else:
-                return False
-    except Exception as e:
+        description = soup_object.find("meta", {"property": "og:description"})
+        if description:
+            return description.get('content')
+        return False
+    except Exception:
         return False
 
-def make_image_url(requestedURL = None, imageURL = None):
-    if not re.search(r'^http(s)?://', imageURL):
-        domainFromrequestedURL = "http://" + extract_domain_url(requestedURL)
-        if(imageURL.startswith("//")):
-            imageURL = "http:" + imageURL
-            return imageURL
-        elif imageURL.startswith("/"):
-            imageURL = domainFromrequestedURL + imageURL
-            return imageURL
-        elif imageURL.startswith("./"):
-            imageURL = domainFromrequestedURL + imageURL[1:]
-            return imageURL
-        elif imageURL.startswith("../"):
-            imageURL = domainFromrequestedURL + imageURL[2:]
-            return imageURL
-        else:
-            imageURL = domainFromrequestedURL + "/" + imageURL
-            return imageURL
-    else:
-        return imageURL
+def make_image_url(requested_url = None, image_url = None):
+    """
+    Make image url from relative url
+    """
+    if not re.search(r'^http(s)?://', image_url):
+        domain_from_requested_url = "http://" + extract_domain_url(requested_url)
+        if image_url.startswith("//"):
+            image_url = "http:" + image_url
+            return image_url
+        if image_url.startswith("/"):
+            image_url = domain_from_requested_url + image_url
+            return image_url
+        if image_url.startswith("./"):
+            image_url = domain_from_requested_url + image_url[1:]
+            return image_url
+        if image_url.startswith("../"):
+            image_url = domain_from_requested_url + image_url[2:]
+            return image_url
+        image_url = domain_from_requested_url + "/" + image_url
+        return image_url
+    return image_url
 
-# imageURL = format_URL(extract_domain_url(requestedURL)) + imageURL
-
-def get_image(soup_object, requestedURL):
+def get_image(soup_object, requested_url):
+    """
+    Get image from soup object
+    Look image in Basic Meta Tags first and then OpenGraph Meta Tags
+    """
     try:
         image = soup_object.find("link", {"rel": "apple-touch-icon"})
         if image:
-            imageURL = make_image_url(requestedURL, image.get('href'))
-            return imageURL
-        else:
-            image = soup_object.find("meta", {"property": "og:image"})
-            if image:
-                imageURL = make_image_url(requestedURL, image.get('content'))
-                return imageURL
-            else:
-                image = soup_object.find("link", {"rel": "shortcut icon"})
-                if image:
-                    imageURL = make_image_url(requestedURL, image.get('href'))
-                    return imageURL
-                else:
-                    image = soup_object.find("link", {"rel": "icon"})
-                    if image:
-                        imageURL = make_image_url(requestedURL, image.get('href'))
-                        return imageURL
-                    else:
-                        try:
-                            favicon = '/favicon.ico'
-                            final_domain = "http://" + extract_domain_url(requestedURL) + favicon
-                            favicon_response = requests.get(final_domain, timeout=60)
-                            if favicon_response.status_code == 200:
-                                return final_domain
-                            else:
-                                return False
-                        except Exception as e:
-                            print("Favicon Exception",e)
-                            return False
-
-    except Exception as e:
-        print("Image Exception",e)
+            image_url = make_image_url(requested_url, image.get('href'))
+            return image_url
+        image = soup_object.find("meta", {"property": "og:image"})
+        if image:
+            image_url = make_image_url(requested_url, image.get('content'))
+            return image_url
+        image = soup_object.find("link", {"rel": "shortcut icon"})
+        if image:
+            image_url = make_image_url(requested_url, image.get('href'))
+            return image_url
+        image = soup_object.find("link", {"rel": "icon"})
+        if image:
+            image_url = make_image_url(requested_url, image.get('href'))
+            return image_url
+        favicon = '/favicon.ico'
+        final_domain = "http://" + extract_domain_url(requested_url) + favicon
+        favicon_response = requests.get(final_domain, timeout=60)
+        if favicon_response.status_code == 200:
+            return final_domain
+        return False
+    except Exception:
         return False
 
 def get_image_bytes(image_url):
+    """
+    Get image bytes from image url
+    """
     b64_img = False
     try:
         data = requests.get(image_url, timeout=60)
         if data.status_code == 200:
             b64_img = base64.b64encode(data.content).decode()
-    except Exception as e:
-        print("Image Bytes Exception",e)
+    except Exception:
         b64_img = False
     return b64_img
 
-def check_URL_reqests_module_BS4(requestedURL):
+def check_url_reqests_module_bs4(requested_url):
+    """
+    Check URL using requests module and BeautifulSoup
+    """
     # headers = {
-    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36'
+    #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+    #                   AppleWebKit/537.36 (KHTML, like Gecko) \
+    #                   Chrome/103.0.0.0 Safari/537.36'
     #     }
     try:
-        response = requests.get(requestedURL, timeout=60)
+        response = requests.get(requested_url, timeout=60)
         soup = BeautifulSoup(response.text, features="html.parser")
         title = get_title(soup)
         description = get_decription(soup)
-        image = get_image(soup, requestedURL)
+        image = get_image(soup, requested_url)
         image_bytes = get_image_bytes(image)
-
         return {
-            'title': title, 
-            'description': description, 
+            'title': title,
+            'description': description,
             'image': image_bytes,
         }
-    except Exception as e:
-        print("IMAGE URL",e)
+    except Exception:
         return False
 
 @app.get("/")
 def home_page():
+    """
+    Home Page
+    """
     return {
         'message': 'Welcome to LinkPreview API',
-        'github': "https://github.com/4akhilkumar/LinkPreview" 
+        'github': "https://github.com/4akhilkumar/LinkPreview"
     }
 
 class URL(BaseModel):
+    """
+    URL Model
+    """
     url: Union[str, None] = None
 
 @app.post("/link_preview/")
 async def link_preview(url_ref: URL):
+    """
+    Main Function
+    """
     try:
-        formatedURL = format_URL(url_ref.url)
-        if formatedURL is not False:
-            validURL = valid_URL(formatedURL)
-            if validURL is True:
-                linkPreview_data = check_URL_reqests_module_BS4(formatedURL)
-                if linkPreview_data is not False:
+        formated_url = format_url(url_ref.url)
+        if formated_url is not False:
+            valid_url = is_valid_url(formated_url)
+            if valid_url is True:
+                link_preview_data = check_url_reqests_module_bs4(formated_url)
+                if link_preview_data is not False:
                     return {
-                        "title": linkPreview_data['title'],
-                        "description": linkPreview_data['description'],
-                        "image": linkPreview_data['image']
+                        "title": link_preview_data['title'],
+                        "description": link_preview_data['description'],
+                        "image": link_preview_data['image']
                     }
-                else:
-                    return {"msg": "Connection Time out"}
-            else:
-                return {"msg": "Invalid URL"}
-        else:
-            return {"msg": "Can't process URL"}
-    except Exception as e:
-        print("Main Func Exception",e)
+                return {"msg": "Connection Time out"}
+            return {"msg": "Invalid URL"}
+        return {"msg": "Can't process URL"}
+    except Exception:
         return home_page()
 
 
