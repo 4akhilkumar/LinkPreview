@@ -81,3 +81,27 @@ except Exception as e:
 
 ## Full Frontend Example - Codepen
 [LinkPreview - Codepen](https://codepen.io/4akhilkumar/pen/PoRJmQm)
+
+## How to Setup in your local machine?
+- Clone the repository using `git clone https://github.com/4akhilkumar/LinkPreview.git`
+- Install the [Python](https://www.python.org/downloads/) 3.8 or above
+
+### For Windows       
+1. Install the [Virtualenv](https://pypi.org/project/virtualenv/) using `pip install virtualenv`     
+2. Create a virtual environment using `python -m venv venv`      
+3. Activate the virtual environment using `venv\Scripts\activate`        
+4. Install the requirements using `python -m pip install -r requirements.txt`
+
+### For Linux
+1. Install the [Virtualenv](https://pypi.org/project/virtualenv/) using `pip3 install virtualenv`     
+2. Create a virtual environment using `python3 -m venv venv`     
+3. Activate the virtual environment using `source venv/bin/activate`     
+4. Install the requirements using `python3 -m pip install -r requirements.txt`
+
+- If requirements installation failed, try these commands as per your OS:  
+`python -m pip install "fastapi"`  
+`python -m pip install "uvicorn[standard]"`     
+`python -m pip install "beautifulsoup4"`        
+`python -m pip install "requests"`      
+
+- Run the server using `uvicorn <file_name>:app --reload`
