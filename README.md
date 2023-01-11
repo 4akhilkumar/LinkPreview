@@ -99,9 +99,6 @@ except Exception as e:
 4. Install the requirements using `python3 -m pip install -r requirements.txt`
 
 - If requirements installation failed, try these commands as per your OS:  
-`python -m pip install "fastapi"`  
-`python -m pip install "uvicorn[standard]"`     
-`python -m pip install "beautifulsoup4"`        
-`python -m pip install "requests"`      
+`python -m pip install fastapi uvicorn[standard] beautifulsoup4 requests`
 
 - Run the server using `uvicorn <file_name>:app --reload`
