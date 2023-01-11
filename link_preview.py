@@ -1,7 +1,8 @@
 """
-This file contains the main logic of the project - Link Preview
+This file contains the main logic of the project - Link Preview API
 """
 import re
+import logging
 from typing import Union
 import base64
 import requests
@@ -10,37 +11,32 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup
 
+LOGGING_META_ATTRIBUTES = '%(filename)s:%(lineno)d: %(funcName)s (%(message)s)\n'
+
+logging.basicConfig(
+            format = '[%(levelname)s] %(asctime)s\n' + LOGGING_META_ATTRIBUTES,
+            datefmt = '%d-%b-%y %H:%M:%S',
+            filename = "link_preview_log_data.log",filemode = "w")
+
 app = FastAPI()
 
-def format_url(url) -> bool:
+def format_url(url: str) -> bool:
     """
     Check url contains "://" using regex
     if true then check the protocol is http or https using regex
     other than http or https are like ftp
     """
-    try:
+    if len(url) > 3:
         if re.search(r'://', url):
             if re.search(r'^http(s)?://', url):
                 return url
+            logging.error("URL is not in a proper format -> %s", str(url))
             return False
-        return 'http://' + url
-    except Exception:
-        return False
+        return 'http://' + str(url)
+    logging.error("URL is too short!")
+    return False
 
-def is_valid_url(formated_url) -> bool:
-    """
-    Check url is valid or not using regex
-    """
-    regex_url = r'^https?:\/\/(?:www\.)? \
-                    [-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$'
-    try:
-        if re.search(regex_url, str(formated_url)):
-            return True
-        return False
-    except Exception:
-        return False
-
-def extract_domain_url(any_url = None) -> str:
+def extract_domain_url(any_url: str) -> str:
     """
     Extract domain name from any url
     """
@@ -52,37 +48,31 @@ def get_title(soup_object):
     Get title from soup object
     Look title in Basic Meta Tags first and then OpenGraph Meta Tags
     """
-    try:
-        title = soup_object.find('title')
-        if title:
-            return title.text
-        title = soup_object.find("meta", {"property": "og:title"})
-        if title:
-            return title.get('content')
-        title = soup_object.find("meta", {"name": "apple-mobile-web-app-title"})
-        if title:
-            return title.get('content')
-        title = soup_object.find("meta", {"property": "og:site_name"})
-        if title:
-            return title.get('content')
-        return False
-    except Exception:
-        return False
+    title = soup_object.find('title')
+    if title:
+        return title.text
+    title = soup_object.find("meta", {"property": "og:title"})
+    if title:
+        return title.get('content')
+    title = soup_object.find("meta", {"name": "apple-mobile-web-app-title"})
+    if title:
+        return title.get('content')
+    title = soup_object.find("meta", {"property": "og:site_name"})
+    if title:
+        return title.get('content')
+    return False
 
 def get_decription(soup_object):
     """
     Get description from soup object
     """
-    try:
-        description = soup_object.find("meta", {"name": "description"})
-        if description:
-            return description.get('content')
-        description = soup_object.find("meta", {"property": "og:description"})
-        if description:
-            return description.get('content')
-        return False
-    except Exception:
-        return False
+    description = soup_object.find("meta", {"name": "description"})
+    if description:
+        return description.get('content')
+    description = soup_object.find("meta", {"property": "og:description"})
+    if description:
+        return description.get('content')
+    return False
 
 def make_image_url(requested_url = None, image_url = None):
     """
@@ -128,13 +118,13 @@ def get_image(soup_object, requested_url):
         if image:
             image_url = make_image_url(requested_url, image.get('href'))
             return image_url
-        favicon = '/favicon.ico'
-        final_domain = "http://" + extract_domain_url(requested_url) + favicon
-        favicon_response = requests.get(final_domain, timeout=60)
+        final_domain = "http://" + extract_domain_url(requested_url) + '/favicon.ico'
+        favicon_response = requests.get(final_domain, timeout = 60)
         if favicon_response.status_code == 200:
             return final_domain
         return False
-    except Exception:
+    except Exception as error_msg:
+        logging.error("%s", str(error_msg))
         return False
 
 def get_image_bytes(image_url):
@@ -143,10 +133,11 @@ def get_image_bytes(image_url):
     """
     b64_img = False
     try:
-        data = requests.get(image_url, timeout=60)
+        data = requests.get(image_url, timeout = 60)
         if data.status_code == 200:
             b64_img = base64.b64encode(data.content).decode()
-    except Exception:
+    except Exception as error_msg:
+        logging.error("%s", str(error_msg))
         b64_img = False
     return b64_img
 
@@ -160,8 +151,8 @@ def check_url_reqests_module_bs4(requested_url):
     #                   Chrome/103.0.0.0 Safari/537.36'
     #     }
     try:
-        response = requests.get(requested_url, timeout=60)
-        soup = BeautifulSoup(response.text, features="html.parser")
+        response = requests.get(requested_url, timeout = 60)
+        soup = BeautifulSoup(response.text, features = "html.parser")
         title = get_title(soup)
         description = get_decription(soup)
         image = get_image(soup, requested_url)
@@ -171,7 +162,8 @@ def check_url_reqests_module_bs4(requested_url):
             'description': description,
             'image': image_bytes,
         }
-    except Exception:
+    except Exception as error_msg:
+        logging.error("%s", str(error_msg))
         return False
 
 @app.get("/")
@@ -198,21 +190,18 @@ async def link_preview(url_ref: URL):
     try:
         formated_url = format_url(url_ref.url)
         if formated_url is not False:
-            valid_url = is_valid_url(formated_url)
-            if valid_url is True:
-                link_preview_data = check_url_reqests_module_bs4(formated_url)
-                if link_preview_data is not False:
-                    return {
-                        "title": link_preview_data['title'],
-                        "description": link_preview_data['description'],
-                        "image": link_preview_data['image']
-                    }
-                return {"msg": "Connection Time out"}
-            return {"msg": "Invalid URL"}
+            link_preview_data = check_url_reqests_module_bs4(formated_url)
+            if link_preview_data is not False:
+                return {
+                    "title": link_preview_data['title'],
+                    "description": link_preview_data['description'],
+                    "image": link_preview_data['image']
+                }
+            return {"msg": "Connection Time out"}
         return {"msg": "Can't process URL"}
-    except Exception:
+    except Exception as error_msg:
+        logging.error("%s", str(error_msg))
         return home_page()
-
 
 origins = [
     "*"
@@ -220,8 +209,8 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins = origins,
+    allow_credentials = True,
+    allow_methods = ["*"],
+    allow_headers = ["*"],
 )
