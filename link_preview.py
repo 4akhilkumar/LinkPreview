@@ -1,22 +1,44 @@
 """
 This file contains the main logic of the project - Link Preview API
 """
-import re
-import logging
-from typing import Union
 import base64
+import configparser
+import logging
+import re
+from logging.handlers import RotatingFileHandler
+from typing import Union
+
 import requests
-from pydantic import BaseModel
+from bs4 import BeautifulSoup
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from bs4 import BeautifulSoup
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
-LOGGING_META_ATTRIBUTES = '%(filename)s:%(lineno)d: %(funcName)s (%(message)s)\n'
 
-logging.basicConfig(
-            format = '[%(levelname)s] %(asctime)s\n' + LOGGING_META_ATTRIBUTES,
-            datefmt = '%d-%b-%y %H:%M:%S',
-            filename = "link_preview_log_data.log",filemode = "w")
+# CONFIG FILE
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+LOG_FILE = config["logging"]["log_file"]
+MAX_BYTES = int(config["logging"]["max_bytes"])
+LOG_LEVEL = config["logging"]["log_level"]
+BACKUP_COUNT = int(config["logging"]["backup_count"])
+
+# Logging Section
+# Configure the log format
+LOG_META_ATTRS = '%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d \
+- %(message)s'
+FORMATTER = logging.Formatter(LOG_META_ATTRS, datefmt="%d-%b-%y %H:%M:%S")
+
+logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL)
+
+# ROTATING FILE HANDLER
+rotating_handler = RotatingFileHandler(filename=LOG_FILE,
+                                        maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT)
+rotating_handler.setFormatter(FORMATTER)
+logger.addHandler(rotating_handler)
 
 app = FastAPI()
 
@@ -36,12 +58,14 @@ def format_url(url: str) -> bool:
     logging.error("URL is too short!")
     return False
 
+
 def extract_domain_url(any_url: str) -> str:
     """
     Extract domain name from any url
     """
     domain_name = re.search(r'^(?:http(s)?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/?\n]+)', any_url)
     return domain_name.group(2)
+
 
 def get_title(soup_object):
     """
@@ -62,6 +86,7 @@ def get_title(soup_object):
         return title.get('content')
     return False
 
+
 def get_decription(soup_object):
     """
     Get description from soup object
@@ -73,6 +98,7 @@ def get_decription(soup_object):
     if description:
         return description.get('content')
     return False
+
 
 def make_image_url(requested_url = None, image_url = None):
     """
@@ -95,6 +121,7 @@ def make_image_url(requested_url = None, image_url = None):
         image_url = domain_from_requested_url + "/" + image_url
         return image_url
     return image_url
+
 
 def get_image(soup_object, requested_url):
     """
@@ -127,6 +154,7 @@ def get_image(soup_object, requested_url):
         logging.error("%s", str(error_msg))
         return False
 
+
 def get_image_bytes(image_url):
     """
     Get image bytes from image url
@@ -140,6 +168,7 @@ def get_image_bytes(image_url):
         logging.error("%s", str(error_msg))
         b64_img = False
     return b64_img
+
 
 def check_url_reqests_module_bs4(requested_url):
     """
@@ -166,6 +195,7 @@ def check_url_reqests_module_bs4(requested_url):
         logging.error("%s", str(error_msg))
         return False
 
+
 @app.get("/")
 def home_page():
     """
@@ -176,11 +206,13 @@ def home_page():
         'github': "https://github.com/4akhilkumar/LinkPreview"
     }
 
+
 class URL(BaseModel):
     """
     URL Model
     """
     url: Union[str, None] = None
+
 
 @app.post("/link_preview/")
 async def link_preview(url_ref: URL):
@@ -202,6 +234,7 @@ async def link_preview(url_ref: URL):
     except Exception as error_msg:
         logging.error("%s", str(error_msg))
         return home_page()
+
 
 origins = [
     "*"
